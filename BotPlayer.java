@@ -60,31 +60,11 @@ public class BotPlayer extends Player {
             objectToSearch = '*';
         }
 
-        if (changedSearchObject) {
-            startSearch = true;
-            int searchX = searchObjectPosition[0];
-            int searchY = searchObjectPosition[1];
-
-            startSearch(searchX, searchY);
-            changedSearchObject = false;
-        }
-
-        if (startSearch) {
-            System.out.println("Start search");
-            startSearch = false;
-            System.out.println("Before search");
-            displayNodeMap(); // delete
-            resetPaths();
-            search();
-            System.out.println("After search");
-            displayNodeMap(); // delete
-        }
         if (look) {
             System.out.println("BOT LOOK");
             look = false;
             return "LOOK";
-        }
-        else if (node[y][x].isGold) {
+        } else if (node[y][x].isGold) {
             objectToSearch = '*';
             System.out.println("BOT PICKUP");
             return "PICKUP";
@@ -93,6 +73,25 @@ public class BotPlayer extends Player {
             System.out.println("BOT QUIT");
             return "QUIT";
         }
+
+        if (changedSearchObject) {
+            System.out.println("Before search");
+            displayNodeMap(); // delete
+            startSearch = true;
+            int searchX = searchObjectPosition[0];
+            int searchY = searchObjectPosition[1];
+            startSearch(searchX, searchY);
+            changedSearchObject = false;
+        }
+        if (startSearch) {
+            resetSearch();
+            System.out.println("Start search");
+            startSearch = false;
+            search();
+            System.out.println("After search");
+            displayNodeMap(); // delete
+        }
+
         return nextMove();
     }
 
@@ -153,10 +152,12 @@ public class BotPlayer extends Player {
                 moved = 0;
             }
         } else {
-            node[expectedPos[1]][expectedPos[0]].setWall();
-            direction = findNextMove();
-            look = true;
+            // node[expectedPos[1]][expectedPos[0]].setWall();
+            objectToSearch = '*';
+            // direction = findNextMove();
+            // look = true;
             moved = 0;
+            return "LOOK";
         }
         expectedPos = pos;
         System.out.println("Next move: " + direction);
@@ -265,22 +266,6 @@ public class BotPlayer extends Player {
         }
     }
 
-    private void resetPaths() {
-        for (int i = 0; i < map.mapHeight(); i++) {
-            for (int j = 0; j < map.mapWidth(); j++) {
-                node[i][j].isPath = false;
-            }
-        }
-    }
-
-    private void openNode(Node node) {
-        if (node.isOpen == false && node.isVisited == false && node.isWall == false) {
-            node.setOpen();
-            node.parent = currentNode;
-            openList.add(node);
-        }
-    }
-
     private void trackThePath() {
         Node current = endNode;
 
@@ -290,6 +275,28 @@ public class BotPlayer extends Player {
             if (current != startNode) {
                 current.setPath();
             }
+        }
+    }
+
+    private void resetSearch() {
+        endReached = false;
+        visitedList.clear();
+        openList.clear();
+        for (int i = 0; i < map.mapHeight(); i++) {
+            for (int j = 0; j < map.mapWidth(); j++) {
+                node[i][j].isPath = false;
+                node[i][j].isVisited = false;
+                node[i][j].isOpen = false;
+                node[i][j].parent = null;
+            }
+        }
+    }
+
+    private void openNode(Node node) {
+        if (node.isOpen == false && node.isVisited == false && node.isWall == false) {
+            node.setOpen();
+            node.parent = currentNode;
+            openList.add(node);
         }
     }
 
@@ -391,6 +398,9 @@ public class BotPlayer extends Player {
         System.out.println("Searching for objects");
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
+                if (node[i][j] == endNode && node[i][j].isWall) {
+                    objectToSearch = '*';
+                }
                 if (node[i][j].isGold) {
                     System.out.println("Gold found");
                     if (presedent('G')) {
