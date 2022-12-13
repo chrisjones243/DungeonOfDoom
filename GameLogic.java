@@ -28,7 +28,21 @@ public class GameLogic {
 		banner();
 		chooseMap();
 		player = new HumanPlayer(map);
+		player.updatePosition(initalPosition());
 		bot = new BotPlayer(map);
+		bot.updatePosition(initalPosition());
+	}
+
+	private int[] initalPosition () {
+
+		int x = (int) (Math.random() * map.mapWidth());
+		int y = (int) (Math.random() * map.mapHeight());
+
+		if (map.isWall(x, y) || (player.position()[0] == x && player.position()[1] == y)) {
+			return initalPosition();
+		}
+
+		return new int[] {x, y};
 	}
 
 	/**
@@ -79,7 +93,7 @@ public class GameLogic {
 		map = new Map("maps/" + mapName);
 	}
 
-	public void play() throws Exception {
+	public void play() throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		while(gameRunning) {
 			String command = "";
@@ -238,7 +252,7 @@ public class GameLogic {
 	 * @return : The map.
 	 */
 	public void look(Player user) {
-		int[] playerPos = user.position();
+		int[] playerPos = player.position();
 		int[] botPos = bot.position();
 
 		if (user == player) {
