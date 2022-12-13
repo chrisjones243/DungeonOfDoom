@@ -5,8 +5,8 @@ public class Player {
     protected Map map;
 
 
-    public Player() {
-
+    public Player(Map map) {
+        this.map = map;
     }
 
     public int[] position() {

@@ -13,7 +13,7 @@ public class GameLogic {
 	
 	/* Reference to the map being used */
 	private Map map;
-	private HumanPlayer player;
+	private Player player;
 	private BotPlayer bot;
 
 	private boolean gameRunning = false;
@@ -27,7 +27,7 @@ public class GameLogic {
 		gameRunning = true;
 		banner();
 		chooseMap();
-		player = new HumanPlayer(map);
+		player = new Player(map);
 		player.updatePosition(initalPosition());
 		bot = new BotPlayer(map);
 		bot.updatePosition(initalPosition());
@@ -258,7 +258,7 @@ public class GameLogic {
 		if (user == player) {
 			System.out.print(map.displayMap( playerPos, botPos));
 		} else if (user == bot) {
-			bot.look(map.displayMapArray(playerPos, botPos));
+			bot.addToMap(map.displayMapArray(playerPos, botPos));
 		}
 	}
 

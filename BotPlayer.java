@@ -3,110 +3,46 @@ import java.util.HashMap;
 
 public class BotPlayer extends Player {
     
-    private char direction = 'E';
+    private char direction = 'E'; // The direction the bot is facing.
 
-    private int stepsUntilLook = 0;
+    private int stepsUntilLook = 0; // The number of steps until the bot "LOOK"s again.
 
-    private int[] expectedPos = position();
+    private int[] expectedPos = position(); // The position the bot expects itself to be in.
 
-    private boolean startSearch = false;
-    private int[] searchObjectPosition = {-1, -1};
+    private int[] searchObjectPosition = {-1, -1}; // The position of the object the bot is searching for.
     private char objectToSearch = '*';
-    private boolean changedSearchObject = false;
+    private boolean changedSearchObject = false; // Used to check if the bot has changed the object it is searching for.
     private HashMap<Character, Integer> objectPrecedence = new HashMap<Character, Integer>();
 
-
+    // Variables used for the A* search.
     Node[][] node;
-    Node startNode, endNode, currentNode;
-    ArrayList<Node> openObjects = new ArrayList<Node>();
-    ArrayList<Node> visitedObjects = new ArrayList<Node>();
+    private Node startNode, endNode, currentNode;
+    private ArrayList<Node> openObjects = new ArrayList<Node>();
+    private ArrayList<Node> visitedObjects = new ArrayList<Node>();
+    private int searchIteration = 0; // Used to check if the search has reached its maximum iterations.
+    private boolean endReached = false;
 
-    private int searchIteration = 0;
-
-
-    boolean endReached = false;
-
-
+    /**
+     * Constructor for the bot player.
+     * 
+     * @param map The map the bot is playing on, used to get the size of the map.
+     */
     public BotPlayer(Map map) {
-        this.map = map;
-        node = new Node[map.mapHeight()][map.mapWidth()];
+        super(map);
+        node = new Node[map.mapHeight()][map.mapWidth()]; // Create a 2D array of nodes.
         setupNodes();
 
+        // Set the precedence of the objects.
         objectPrecedence.put('P', 1);
         objectPrecedence.put('G', 2);
         objectPrecedence.put('E', 3);
         objectPrecedence.put('?', 4);
-        objectPrecedence.put('*', 5);
+        objectPrecedence.put('*', 5); // Default value, used when resetting the search.
     }
-
-    public void updatePosition(int[] pos) {
-        position = pos;
-        expectedPos = pos;
-    }
-
 
     /**
-     * This method is called by the game engine.
-     * 
-     * @return The next move of the bot.
+     * This method is used to append the nodes to the 2D array.
      */
-    public String makeMove() {
-        int pos[] = position();
-        int x = pos[0];
-        int y = pos[1];
-        node[y][x].isPath = false;
-        searchForObjects();
-        System.out.println("Search object: " + objectToSearch);
-        if (node[y][x] == endNode || node[y][x + 1] == endNode || node[y][x - 1] == endNode || node[y + 1][x] == endNode || node[y - 1][x] == endNode) {
-            objectToSearch = '*';
-        }
-        if (node[y][x].isPlayer) {
-            node[y][x].isPlayer = false;
-            System.out.println("BOT SHOOT");
-            return "LOOK";
-        } else if (stepsUntilLook <= 0) {
-
-            System.out.println("BOT LOOK");
-            if (objectToSearch == 'P') {
-                stepsUntilLook = 100;
-            } else {
-                stepsUntilLook = 5;
-            }
-
-            return "LOOK";
-        } else if (node[y][x].isGold) {
-
-            objectToSearch = '*';
-            System.out.println("BOT PICKUP");
-            return "PICKUP";
-        } else if (node[y][x].isExit && goldCount >= map.goldRequired()) {
-            System.out.println("BOT QUIT");
-
-            return "QUIT";
-        }
-
-        if (changedSearchObject) {
-            System.out.println("Changed search object to: " + objectToSearch);
-            System.out.println("Before search");
-            displayNodeMap(); // delete
-            startSearch = true;
-            int searchX = searchObjectPosition[0];
-            int searchY = searchObjectPosition[1];
-            startSearch(searchX, searchY);
-            changedSearchObject = false;
-        }
-        if (startSearch) {
-            resetSearch();
-            System.out.println("Start search");
-            startSearch = false;
-            search();
-            
-            System.out.println("After search");
-            displayNodeMap(); // delete
-        }
-        return nextMove();
-    }
-
     private void setupNodes() {
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
@@ -116,10 +52,76 @@ public class BotPlayer extends Player {
     }
 
     /**
-     * This method is called by the makeMove function.
-     * and is used to find the next move the bot should make.
+     * This method is used to update the position of the bot.
      * 
-     * @return The next move the bot should make.
+     * @param pos The position the bot is in.
+     */
+    public void updatePosition(int[] pos) {
+        position = pos;
+        expectedPos = pos;
+    }
+
+
+    /**
+     * This method is called by the game engine.
+     * 
+     * @return String The move the bot wants to make.
+     */
+    public String makeMove() {
+        int pos[] = position();
+        int x = pos[0];
+        int y = pos[1];
+
+        // remove the path from the current position, so the bot doesn't go back to the same position.
+        node[y][x].isPath = false;
+
+        searchForObjects(); // Search for objects within the map.
+
+        if ( node[y][x] == endNode || node[y][x + 1] == endNode || node[y][x - 1] == endNode || node[y + 1][x] == endNode || node[y - 1][x] == endNode ) {
+                // If the bot is on or next to the end node, reset the search.
+                objectToSearch = '*';
+        }
+
+        if (node[y][x].isPlayer) {
+            // If the bot is on a player, remove the player from the map, 
+            // and LOOK again, since the player might have moved.
+            node[y][x].isPlayer = false;
+
+            return "LOOK";
+        } else if (stepsUntilLook <= 0) {
+            // If the bot has reached the number of steps until it should LOOK again.
+            // and reset the steps until it should LOOK again.
+            if (objectToSearch == 'P') {
+                stepsUntilLook = 100;
+            } else {
+                stepsUntilLook = 5;
+            }
+            return "LOOK";
+        } else if (node[y][x].isGold) {
+            // If the bot is on gold, pick it up, and reset the search.
+            objectToSearch = '*';
+
+            return "PICKUP";
+        } else if (node[y][x].isExit && goldCount >= map.goldRequired()) {
+            // If the bot is on the exit, and has enough gold, exit the map.
+            return "QUIT";
+        }
+
+        if (changedSearchObject) {
+            // If the bot has changed the object it is searching for, start the search again.
+            changedSearchObject = false;
+            setupSearch();
+            resetSearch();
+            search();
+        }
+
+        return nextMove();
+    }
+
+    /**
+     * This method is  used to find the next move the bot should make.
+     * 
+     * @return String containing the next move the bot should make.
      */
     private String nextMove() {
         int[] pos = position(); 
@@ -145,11 +147,13 @@ public class BotPlayer extends Player {
             // If the bot is on a wall or it's not where it should be, look and reset search object.
             objectToSearch = '*';
             stepsUntilLook = 5;
+
             return "LOOK";
         }
 
         stepsUntilLook--;
         expectedPos = pos;
+
         return "MOVE " + direction;
     }
 
@@ -159,26 +163,30 @@ public class BotPlayer extends Player {
      * @param x The x coordinate of the node.
      * @param y The y coordinate of the node.
      */
-    private void startSearch(int x, int y) {
+    private void setupSearch() {
         int[] pos = position();
+        int x = searchObjectPosition[0];
+        int y = searchObjectPosition[1];
         setStartNode(pos[0], pos[1]);
         setEndNode(x, y);
 
         setCostOnNodes(); // Set the cost of each node.
     }
 
-    // * The search will start from the current position of the player.
-    //  * 
-    //  * The search will be done using the A* algorithm.
-    //  * 
-    //  * The search will be done using the following rules:
-    //  * 1. The search will stop when the object is found.
-    //  * 2. The search will stop when the search has reached the end of the map.
-    //  * 3. The search will stop when the search has reached the maximum number of steps.
-    //  * 
-    //  * The search will be done using the following heuristics:
-    //  * 1. The search will use the Euclidean distance.
-
+    /**
+     * This method is an implementation of the A* search algorithm.
+     * 
+     * The search will start from the current position of the player.
+     * 
+     * The search will be done using the following rules:
+     * 1. The search will stop when the object is found.
+     * 2. The search will stop when the search has reached the end of the map.
+     * 3. The search will stop when the search has reached the maximum number of steps.
+     * 
+     * The search will use the Manhattan distance as a heuristic.
+     * 
+     * Followed https://youtu.be/2JNEme00ZFA as a guide.
+     */
     private void search() {
         while (endReached == false) {
             int x = currentNode.getX();
@@ -188,6 +196,8 @@ public class BotPlayer extends Player {
             visitedObjects.add(currentNode);
             openObjects.remove(currentNode);
 
+            // Check the nodes around the current node, 
+            // and set them as open if they are within the map bounds.
             if (x - 1 >= 0) {
                 openNode(node[y][x - 1]);
             }
@@ -202,33 +212,39 @@ public class BotPlayer extends Player {
             }
 
             // Find the node with the lowest cost.
-            int nodeIndex = 0;
+            int lowestNodeIndex = 0;
             int lowestCost = 9999;
 
+            // Loop through all the open nodes.
+            // And if the node has a lower cost than the current lowest cost,
+            // set the node as the node with the lowest cost.
             for (int i = 0; i < openObjects.size(); i++) {
                 if (openObjects.get(i).fCost < lowestCost) {
-                    lowestCost = openObjects.get(i).fCost;
-                    nodeIndex = i;
-                } else if (openObjects.get(i).fCost == lowestCost) {
-                    if (openObjects.get(i).gCost < openObjects.get(nodeIndex).gCost) {
-                        nodeIndex = i;
+                    lowestCost = openObjects.get(i).fCost; 
+                    lowestNodeIndex = i;
+                } else if (openObjects.get(i).fCost == lowestCost) { // If the costs are equal, use the gCost.
+                    if (openObjects.get(i).gCost < openObjects.get(lowestNodeIndex).gCost) {
+                        lowestNodeIndex = i;
                     }
                 }
             }
 
-            currentNode = openObjects.get(nodeIndex);
+            currentNode = openObjects.get(lowestNodeIndex);
 
             if (currentNode == endNode) {
+                // If the current node is the end node, the search is done.
                 endReached = true;
                 trackThePath();
-                System.out.println("End reached!");
+
             } else if (searchIteration >= 300) {
+                // If the search has reached the maximum number of steps, the search is done.
                 endReached = true;
-                endNode.setUnreachable(); // Set the end node to unreachable.
+                endNode.setUnreachable();
                 objectToSearch = '*';
                 searchForObjects();
-                System.out.println("Search iteration limit reached!");
+
             } else {
+                // If the search is not done, continue the search.
                 searchIteration++;
                 search();
             }
@@ -237,7 +253,6 @@ public class BotPlayer extends Player {
 
     /**
      * This method is used to find the shortest path from the start node to the end node.
-     * 
      */
     private void trackThePath() {
         Node current = endNode;
@@ -253,8 +268,7 @@ public class BotPlayer extends Player {
 
     /**
      * This method is used to reset the visited and open nodes.
-     * So that a new search can be done again.
-     * 
+     * So that a new search can be done again, without the old search interfering.
      */
     private void resetSearch() {
         searchIteration = 0;
@@ -279,7 +293,7 @@ public class BotPlayer extends Player {
      * This method is used to open a node.
      * this means that the node will be added to the open list.
      *
-     * @param node
+     * @param node The node to open.
      */
     private void openNode(Node node) {
         // If the node is not visited, not open and not a wall.
@@ -290,18 +304,33 @@ public class BotPlayer extends Player {
         }
     }
 
-
+    /**
+     * This method is used to set the start node.
+     * 
+     * @param x The x position of the start node.
+     * @param y The y position of the start node.
+     */
     private void setStartNode(int x, int y) {
         node[y][x].setStart();
         startNode = node[y][x];
         currentNode = startNode;
     }
 
+    /**
+     * This method is used to set the end node.
+     * 
+     * @param x The x position of the end node.
+     * @param y The y position of the end node.
+     */
     private void setEndNode(int x, int y) {
         node[y][x].setEnd();
         endNode = node[y][x];
     }
 
+    /**
+     * This method is used to set the cost of all the nodes.
+     * The cost is used to find the shortest path.
+     */
     private void setCostOnNodes() {
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
@@ -310,9 +339,17 @@ public class BotPlayer extends Player {
         }
     }
 
+    /**
+     * This method is used to get the cost of a node.
+     * The cost is used to find the shortest path.
+     * 
+     * @param node The node to get the cost of.
+     */
     private void getCost(Node node) {
         int weight = 0;
         if (!(node.isUnknown) && endNode.isUnknown) {
+            // If the node is not unknown and the end node is unknown, add a weight to the node.
+            // This is done to make the search go to the unknown nodes first, instead of revisiting known nodes.
             weight = 1;
         }
         // Get the distance between the current node and the start node.
@@ -329,81 +366,54 @@ public class BotPlayer extends Player {
         node.fCost = node.gCost + node.hCost + weight;
     }
 
-    public void look(char[][] view) {
+    /**
+     * This method is called in the GameLogic class.
+     * It is used recieve the view of the bot from the GameLogic class,
+     * and add it to the map.
+     * 
+     * @param view
+     */
+    public void addToMap(char[][] view) {
+
         int[] pos = position();
         int x = pos[0];
         int y = pos[1];
+
         int viewX = 0;
         int viewY = 0;
 
+        // The view is 5x5, so the bot is in the middle of the view.   
+        // The view is added to the map, starting from the top left corner of the view.
         for (int i = y - 2; i < y + 3; i++ ) {
             viewX = 0;
 			for (int j = x - 2; j < x + 3; j++ ) {
 				if ((i >= 0 && j >= 0 && i < (map.mapHeight()) && j < (map.mapWidth()))) {
+                    // If the bot is within the map boundaries, set the node to the correct object type.
                     if (view[viewY][viewX] == '#') {
                         node[i][j].setWall();
                     } else if (view[viewY][viewX] == '.') {
                         node[i][j].setEmpty();
                     } else if (view[viewY][viewX] == 'E') {
                         node[i][j].setExit();
-                        // if (goldCount >= map.goldRequired()) {
-                        //     startSearch = true;
-                        //     startSearch(j, i);
-                        // }
                     } else if (view[viewY][viewX] == 'G') {
                         node[i][j].setGold();
-                        // startSearch = true;
-                        // startSearch(j, i);
                     } else if (view[viewY][viewX] == 'P') {
                         node[i][j].setPlayer();
-                        // startSearch(j, i);
-                        // startSearch = true;
                     }
                 }
                 viewX++;
 			}
             viewY++;
 		}
-        displayNodeMap();
-    }
-
-    private void displayNodeMap() {
-        for (int i = 0; i < node.length; i++) {
-            for (int j = 0; j < node[i].length; j++) {
-                if (node[i][j].isPath) {
-                    System.out.print("~");
-                } else if (node[i][j].isWall) {
-                    System.out.print("#");
-                } else if (node[i][j].isGold) {
-                    System.out.print("G");
-                } else if (node[i][j].isExit) {
-                    System.out.print("E");
-                } else if (node[i][j].isPlayer) {
-                    System.out.print("P");
-                } else if (node[i][j].isUnknown) {
-                    System.out.print("?");
-                } else {
-                    System.out.print(".");
-                }
-            }
-            System.out.println();
-        }
     }
     
     /**
      * This method is used to search for objects on the map.
      * It will search for the object with the highest priority.
-     * 
-     * The priority is as follows:
-     * 1. Gold
-     * 2. Exit
-     * 3. Player
-     * 4. Unknown
-     * 
-     * 
      */
     private void searchForObjects() {
-        System.out.println("Searching for objects");
+
+        // Iterate through the map, and set the search for the object with the highest priority.
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
                 if (node[i][j].isUnreachable) {
@@ -412,25 +422,22 @@ public class BotPlayer extends Player {
                 if (node[i][j] == endNode && node[i][j].isWall) {
                     objectToSearch = '*';
                 }
-                if (!(node[i][j].isUnreachable)) {
-                    if (node[i][j].isGold) {
-                        System.out.println("Gold found");
-                        if (presedent('G')) {
-                            searchObjectPosition = new int[] {j, i};
-                        }
-                    } else if (node[i][j].isPlayer) {
-                        if (presedent('P')) {
-                            searchObjectPosition = new int[] {j, i};
-                            stepsUntilLook = 100;
-                        }
-                    } else if (node[i][j].isExit && goldCount >= map.goldRequired()) {
-                        if (presedent('E')) {
-                            searchObjectPosition = new int[] {j, i};
-                        }
-                    } else if (node[i][j].isUnknown) {
-                        if (presedent('?')) {
-                            searchObjectPosition = new int[] {j, i};
-                        }
+                if (node[i][j].isGold) {
+                    if (presedent('G')) {
+                        searchObjectPosition = new int[] {j, i};
+                    }
+                } else if (node[i][j].isPlayer) {
+                    if (presedent('P')) {
+                        searchObjectPosition = new int[] {j, i};
+                        stepsUntilLook = 100;
+                    }
+                } else if (node[i][j].isExit && goldCount >= map.goldRequired()) {
+                    if (presedent('E')) {
+                        searchObjectPosition = new int[] {j, i};
+                    }
+                } else if (node[i][j].isUnknown) {
+                    if (presedent('?')) {
+                        searchObjectPosition = new int[] {j, i};
                     }
                 }
                 
@@ -439,8 +446,9 @@ public class BotPlayer extends Player {
     }
 
     /**
-     * Returns true if the object has higher precedence than the current object to search for
-     * @param object
+     * Checks the precedence of the object, against the current object.
+     * 
+     * @param object The object to check the precedence of
      * @return boolean true if the object has higher precedence than the current object to search for
      */
     private boolean presedent(char object) {
@@ -451,6 +459,5 @@ public class BotPlayer extends Player {
         }
         return false;
     }
-
 
 }
