@@ -17,7 +17,7 @@ public class Map {
 	/**
 	 * Constructor that accepts a map to read in from.
 	 *
-	 * @param filename The filename of the map file.
+	 * @param filename - The filename of the map file.
 	 * @throws IOException
 	 */
 	public Map(String fileName) throws IOException {
@@ -49,7 +49,7 @@ public class Map {
 	/**
      * Reads the map from file.
      *
-     * @param filename Name of the map's file.
+     * @param filename - Name of the map's file.
 	 * @throws IOException
      */
     public void readMap(String fileName) throws IOException {
@@ -86,9 +86,9 @@ public class Map {
 	 * Displays the 5x5 map around the player.
 	 * Used only for the human player.
 	 *
-	 * @param playerPos The x, y coordinates of the player.
-	 * @param botPos The x, y coordinates of the bot.
-	 * @return : A string of the view.
+	 * @param playerPos - The x, y coordinates of the player.
+	 * @param botPos - The x, y coordinates of the bot.
+	 * @return A string of the view.
 	 */
 	public String displayMap(int[] playerPos, int[] botPos) {
 		String mapString = "";
@@ -121,9 +121,9 @@ public class Map {
 	 * Returns a 2D array of the map around the player.
 	 * Used only for Bot.
 	 *
-	 * @param playerPos The x, y coordinates of the player.
-	 * @param botPos The x, y coordinates of the bot.
-	 * @return : A 2D array of the view.
+	 * @param playerPos - The x, y coordinates of the player.
+	 * @param botPos - The x, y coordinates of the bot.
+	 * @return A 2D array of the view.
 	 */
 	public char[][] displayMapArray(int[] playerPos, int[] botPos) {
 		char[][] mapArray = new char[5][5];
@@ -145,6 +145,7 @@ public class Map {
 	}
 
 	// Getters
+	
 	public String mapName() {
 		return mapName;
 	}

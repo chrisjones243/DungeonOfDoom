@@ -33,7 +33,7 @@ public class BotPlayer extends Player {
     /**
      * Constructor for the bot player.
      * 
-     * @param map The map the bot is playing on, used to get the size of the map.
+     * @param map - The map the bot is playing on, used to get the size of the map.
      */
     public BotPlayer(Map map) {
         super(map);
@@ -62,7 +62,7 @@ public class BotPlayer extends Player {
     /**
      * This method is used to update the position of the bot.
      * 
-     * @param pos The position the bot is in.
+     * @param pos - The position the bot is in.
      */
     public void updatePosition(int[] pos) {
         position = pos;
@@ -73,7 +73,7 @@ public class BotPlayer extends Player {
     /**
      * This method is called by the game engine.
      * 
-     * @return String The move the bot wants to make.
+     * @return The move the bot wants to make.
      */
     public String makeMove() {
         int pos[] = position();
@@ -129,7 +129,7 @@ public class BotPlayer extends Player {
     /**
      * This method is  used to find the next move the bot should make.
      * 
-     * @return String containing the next move the bot should make.
+     * @return The string containing the next move the bot should make.
      */
     private String nextMove() {
         int[] pos = position(); 
@@ -168,8 +168,8 @@ public class BotPlayer extends Player {
     /**
      * This method is used to setup the search.
      * 
-     * @param x The x coordinate of the node.
-     * @param y The y coordinate of the node.
+     * @param x - The x coordinate of the node.
+     * @param y - The y coordinate of the node.
      */
     private void setupSearch() {
         int[] pos = position();
@@ -301,7 +301,7 @@ public class BotPlayer extends Player {
      * This method is used to open a node.
      * this means that the node will be added to the open list.
      *
-     * @param node The node to open.
+     * @param node - The node to open.
      */
     private void openNode(Node node) {
         // If the node is not visited, not open and not a wall.
@@ -315,8 +315,8 @@ public class BotPlayer extends Player {
     /**
      * This method is used to set the start node.
      * 
-     * @param x The x position of the start node.
-     * @param y The y position of the start node.
+     * @param x - The x position of the start node.
+     * @param y - The y position of the start node.
      */
     private void setStartNode(int x, int y) {
         node[y][x].setStart();
@@ -327,8 +327,8 @@ public class BotPlayer extends Player {
     /**
      * This method is used to set the end node.
      * 
-     * @param x The x position of the end node.
-     * @param y The y position of the end node.
+     * @param x - The x position of the end node.
+     * @param y - The y position of the end node.
      */
     private void setEndNode(int x, int y) {
         node[y][x].setEnd();
@@ -351,7 +351,7 @@ public class BotPlayer extends Player {
      * This method is used to get the cost of a node.
      * The cost is used to find the shortest path.
      * 
-     * @param node The node to get the cost of.
+     * @param node - The node to get the cost of.
      */
     private void getCost(Node node) {
         int weight = 0;
@@ -379,7 +379,7 @@ public class BotPlayer extends Player {
      * It is used recieve the view of the bot from the GameLogic class,
      * and add it to the map.
      * 
-     * @param view
+     * @param view - The view of the bot.
      */
     public void addToMap(char[][] view) {
 
@@ -456,8 +456,8 @@ public class BotPlayer extends Player {
     /**
      * Checks the precedence of the object, against the current object.
      * 
-     * @param object The object to check the precedence of
-     * @return boolean true if the object has higher precedence than the current object to search for
+     * @param object - The object to check the precedence of
+     * @return True if the object has higher precedence than the current object to search for
      */
     private boolean presedent(char object) {
         if (objectPrecedence.get(object) < objectPrecedence.get(objectToSearch)) {

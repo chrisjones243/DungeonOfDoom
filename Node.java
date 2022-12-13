@@ -1,8 +1,11 @@
 public class Node {
+
+    // Node coordinates
+    private int x;
+    private int y;
     
+    // For pathfinding
     Node parent;
-    int x;
-    int y;
     int gCost;
     int hCost;
     int fCost;
@@ -12,6 +15,7 @@ public class Node {
     boolean isOpen;
     boolean isPath;
 
+    // Node types
     boolean isEmpty;
     boolean isGold;
     boolean isPlayer;
@@ -20,19 +24,18 @@ public class Node {
     boolean isUnknown = true;
     boolean isUnreachable = false;
 
-
+    /**
+     * Constructor for the Node class.
+     * 
+     * @param x - The x position of the node
+     * @param y - The y position of the node
+     */
     public Node(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
+    // Setters
 
     public void setStart() {
         isStart = true;
@@ -81,5 +84,15 @@ public class Node {
 
     public void setUnreachable() {
         isUnreachable = true;
+    }
+
+    // Getters
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
     }
 }

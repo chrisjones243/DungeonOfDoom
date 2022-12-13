@@ -184,8 +184,9 @@ public class GameLogic {
 	/**
 	 * Moves the player in the specified direction.
 	 *
-	 * @param : Direction to move in.
-	 * @return : If the move was successful.
+	 * @param Direction - The direction the user wishes to move in
+	 * @param user - The player or bot
+	 * @return If the move was successful.
 	 */
 	public void move(char direction, Player user) {
 		int[] pos = user.position();
@@ -259,7 +260,7 @@ public class GameLogic {
 	 * If they are, the game ends, if they have enough gold they win.
 	 * 
 	 * @param user - The player or bot
-	 * @return - Message to display to the user
+	 * @return Message to display to the user
 	 */
 	public String quit(Player user) {
 		int[] pos = user.position();
@@ -287,7 +288,7 @@ public class GameLogic {
     /**
 	 * Returns the gold required to win.
 	 *
-     * @return : Gold required to win.
+     * @return Gold required to win.
      */
     public String hello() {
         return "Gold required to win: " + map.goldRequired();	
@@ -314,7 +315,7 @@ public class GameLogic {
 	/**
 	 * Main method.
 	 *
-	 * @param args : Command line arguments.
+	 * @param args - Command line arguments.
 	 */
 	public static void main(String[] args) throws Exception {
 		GameLogic logic = new GameLogic();
