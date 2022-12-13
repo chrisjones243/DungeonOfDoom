@@ -63,6 +63,8 @@ public class GameLogic {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(bannerFile)));
 			String line = reader.readLine();
 			while (line != null) {
+				// Print the line, then read the next line,
+				// and repeat, until there are no more lines
 				System.out.println(line);
 				line = reader.readLine();
 			}
@@ -73,18 +75,21 @@ public class GameLogic {
 	}
 
 	/**
-	 * Prints the map
+	 * Allows the player to choose the map they wish to play on.
+	 * 
+	 * @throws IOException
 	 */
 	public void chooseMap() throws IOException {
 		String mapName = "";
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		System.out.print("Please enter the name of the map you wish to play on: ");
 		try {
-			mapName = br.readLine();
+			mapName = br.readLine(); // Read the map name
 		} catch (IOException e){
 			System.out.print("something went wrong on input.");
 		}
 
+		// Set the map name based on the input
 		switch (mapName) {
 			case "small":
 				mapName = "small_example_map.txt";
@@ -99,46 +104,59 @@ public class GameLogic {
 				mapName = "small_example_map.txt";
 				break;
 		}
+
+		// Create the map
 		map = new Map("maps/" + mapName);
 	}
 
+	/**
+	 * Starts the game
+	 * 
+	 * @throws IOException
+	 */
 	public void play() throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		while(gameRunning) {
 			String command = "";
 
+			// Read the input
 		try {
-				command = reader.readLine();
+			command = reader.readLine();
 		} catch (IOException e) {
-            // System.in has been closed
-			e.printStackTrace();
-            System.out.println(e);
-        }
+			System.out.println("Error reading input");
+		}
 
+		// Process the players' input
 		processInput(command, player);
 		processInput(bot.makeMove(), bot);
 
+		// Check if the bot has caught the player
 		if (Arrays.equals(player.position(), bot.position())) {
 			System.out.println("You have been caught by the bot!");
 			System.out.println("LOSE");
 			gameRunning = false;
 		}
 
-		// System.out.println(map.displayFullMap(player, bot));
+		System.out.println(map.displayFullMap(player, bot)); // delete
 		}
 	}
 
-
+	/**
+	 * Processes the input from the player or bot and calls the appropriate method
+	 * 
+	 * @param command - The command the user has entered
+	 * @param user - The player or bot
+	 */
 	public void processInput(String command, Player user) {
 		command = command.toUpperCase();
-		String[] input = command.split(" ");
+		String[] input = command.split(" "); // Needed for MOVE command
 		
 		switch (input[0]) {
 			case "MOVE":
-				if (input.length < 2) {
+				if (input.length < 2) { // If the user has not entered a direction
 					System.out.println("Invalid command");
 				} else {
-					move(input[1].charAt(0), user);
+					move(input[1].charAt(0), user); // Move in the specified direction
 				}
 				break;
 			case "LOOK":
@@ -173,6 +191,8 @@ public class GameLogic {
 		int[] pos = user.position();
 		int x = pos[0];
 		int y = pos[1];
+
+		// Update the position based on the direction
 		switch (direction) {
             case 'N':
                 y--;
@@ -189,25 +209,26 @@ public class GameLogic {
 			default:
 				System.out.println("Invalid command");
         }
+
+		// Check if the move is valid
 		if (map.isWall(x, y)) {
 			if (user == player) {
 				System.out.println("Fail");
 			}
-			if (user == bot) {
-				bot.node[y][x].isWall = true;
-			}
 		} else {
-			user.updatePosition(x, y);
+			user.updatePosition(x, y); // Update the position
 			if (user == player) {
 				System.out.println("Success");
-			}
-			if (user == bot) {
-				bot.node[y][x].isWall = false;
 			}
 		}
 	}
 
-	
+	/**
+	 * Checks the tile the user is standing on is gold or not.
+	 * If it is, the user picks it up.
+	 * 
+	 * @param user - The player or bot
+	 */
 	public void pickup(Player user) {
 		int[] pos = user.position();
 		int x = pos[0];
@@ -215,12 +236,16 @@ public class GameLogic {
 
 		if (map.isGold(x, y)) {
 			user.incrementGold();
+
+			// Remove the gold from the maps
 			map.removeGold(x, y);
-			if (user == player) {
-				System.out.println("Success. Gold owned: " + player.gold());
-			}
 			if (user == bot) {
 				bot.node[y][x].isGold = false;
+			}
+
+			// Check if the user has picked up gold
+			if (user == player) {
+				System.out.println("Success. Gold owned: " + player.gold());
 			}
 		} else {
 			if (user == player) {
@@ -229,19 +254,32 @@ public class GameLogic {
 		}
 	}
 
+	/**
+	 * Checks if the user is on an exit tile.
+	 * If they are, the game ends, if they have enough gold they win.
+	 * 
+	 * @param user - The player or bot
+	 * @return - Message to display to the user
+	 */
 	public String quit(Player user) {
 		int[] pos = user.position();
 		int x = pos[0];
 		int y = pos[1];
+
+		// Check if the user is on an exit tile
 		if (map.isExit(x, y)) {
 			gameRunning = false;
+			// Check if the user has enough gold
 			if (user.gold() >= map.goldRequired()) {
+				// If the user is the player, they win
 				if (user == player) {
 					return "WIN";
 				}
-			return "LOSE";
 			}
+			// If the user is the bot, they lose or if the player does not have enough gold
+			return "LOSE";
 		}
+
 		return "Not on Exit";
 	}
 
@@ -256,17 +294,17 @@ public class GameLogic {
     }
 
 	/**
-	 * Returns the 5x5 map.
-	 *
-	 * @return : The map.
+	 * Displays the view to the user.
 	 */
 	public void look(Player user) {
 		int[] playerPos = player.position();
 		int[] botPos = bot.position();
 
 		if (user == player) {
+			// If the user is the player, print the view
 			System.out.print(map.displayMap( playerPos, botPos));
 		} else if (user == bot) {
+			// If the user is the bot, add the view to the bot map
 			bot.addToMap(map.displayMapArray(playerPos, botPos));
 		}
 	}

@@ -24,7 +24,7 @@ public class Map {
 		readMap(fileName);
 	}
 
-	public String displayFullMap(Player player, Player bot) {
+	public String displayFullMap(Player player, Player bot) { // delete this
 		String mapString = "";
 		int x = player.position()[0];
 		int y = player.position()[1];
