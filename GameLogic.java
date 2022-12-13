@@ -167,6 +167,9 @@ public class GameLogic {
 			case "GOLD":
 				System.out.println("Gold owned: " + player.gold());
 				break;
+			case "HELLO":
+				System.out.println("Gold to win: " + map.goldRequired());
+				break;
 			case "HELP":
 				System.out.println(guide);
 				break;
