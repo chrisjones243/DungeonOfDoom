@@ -136,9 +136,6 @@ public class BotPlayer extends Player {
         } else if (node[y - 1][x].isPath || node[y - 1][x].isGold || (node[y - 1][x].isExit && goldCount == map.goldRequired()) || node[y - 1][x].isPlayer) {
             y--;
             direction = 'N';
-        } else {
-            x++;
-            direction = 'E';
         }
 
         if (node[y][x].isWall || expectedPos != pos) {
