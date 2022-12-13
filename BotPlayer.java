@@ -40,15 +40,11 @@ public class BotPlayer extends Player {
         precedence.put('*', 5);
     }
 
-    private boolean presedent(char object) {
-        if (precedence.get(object) < precedence.get(objectToSearch)) {
-            objectToSearch = object;
-            changedSearchObject = true;
-            System.out.println("Changed search object to " + object);
-            return true;
-        }
-        return false;
+    public void updatePosition(int[] pos) {
+        position = pos;
+        expectedPos = pos;
     }
+
 
     /**
      * This method is called by the game engine.
@@ -88,6 +84,7 @@ public class BotPlayer extends Player {
         }
 
         if (changedSearchObject) {
+            System.out.println("Changed search object to: " + objectToSearch);
             System.out.println("Before search");
             displayNodeMap(); // delete
             startSearch = true;
@@ -129,19 +126,25 @@ public class BotPlayer extends Player {
 
         if (node[y][x + 1].isPath || node[y][x + 1].isGold || (node[y][x + 1].isExit && goldCount == map.goldRequired()) || node[y][x + 1].isPlayer) {
             x++;
+            direction = 'E';
         } else if (node[y][x - 1].isPath || node[y][x - 1].isGold || (node[y][x - 1].isExit && goldCount == map.goldRequired()) || node[y][x - 1].isPlayer) {
             x--;
+            direction = 'W';
         } else if (node[y + 1][x].isPath || node[y + 1][x].isGold || (node[y + 1][x].isExit && goldCount == map.goldRequired()) || node[y + 1][x].isPlayer) {
             y++;
+            direction = 'S';
         } else if (node[y - 1][x].isPath || node[y - 1][x].isGold || (node[y - 1][x].isExit && goldCount == map.goldRequired()) || node[y - 1][x].isPlayer) {
             y--;
+            direction = 'N';
         } else {
             x++;
+            direction = 'E';
         }
 
         if (node[y][x].isWall || expectedPos != pos) {
             objectToSearch = '*';
             stepsUntilLook = 5;
+            System.out.println("BOT LOOK");
             return "LOOK";
         }
 
@@ -398,7 +401,7 @@ public class BotPlayer extends Player {
             System.out.println();
         }
     }
-
+    
     private void searchForObjects() {
         System.out.println("Searching for objects");
         for (int i = 0; i < map.mapHeight(); i++) {
@@ -434,6 +437,15 @@ public class BotPlayer extends Player {
                 
             }
         }
+    }
+
+    private boolean presedent(char object) {
+        if (precedence.get(object) < precedence.get(objectToSearch)) {
+            objectToSearch = object;
+            changedSearchObject = true;
+            return true;
+        }
+        return false;
     }
 
 
