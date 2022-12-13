@@ -58,6 +58,7 @@ public class BotPlayer extends Player {
         int x = pos[0];
         int y = pos[1];
         node[y][x].isPath = false;
+        searchForObjects();
         System.out.println("Search object: " + objectToSearch);
         if (node[y][x] == endNode || node[y][x + 1] == endNode || node[y][x - 1] == endNode || node[y + 1][x] == endNode || node[y - 1][x] == endNode) {
             objectToSearch = '*';
@@ -65,9 +66,8 @@ public class BotPlayer extends Player {
         if (node[y][x].isPlayer) {
             System.out.println("BOT SHOOT");
             return "LOOK";
-        } else if (stepsUntilLook == 0) {
+        } else if (stepsUntilLook <= 0) {
 
-            searchForObjects();
             System.out.println("BOT LOOK");
             if (objectToSearch == 'P') {
                 stepsUntilLook = 100;
@@ -79,7 +79,6 @@ public class BotPlayer extends Player {
         } else if (node[y][x].isGold) {
 
             objectToSearch = '*';
-            searchForObjects();
             System.out.println("BOT PICKUP");
             return "PICKUP";
         } else if (node[y][x].isExit && goldCount >= map.goldRequired()) {
@@ -106,7 +105,6 @@ public class BotPlayer extends Player {
             System.out.println("After search");
             displayNodeMap(); // delete
         }
-
         return nextMove();
     }
 
@@ -130,54 +128,24 @@ public class BotPlayer extends Player {
         int y = pos[1];
 
         if (node[y][x + 1].isPath || node[y][x + 1].isGold || (node[y][x + 1].isExit && goldCount == map.goldRequired()) || node[y][x + 1].isPlayer) {
-            direction = 'E';
+            x++;
         } else if (node[y][x - 1].isPath || node[y][x - 1].isGold || (node[y][x - 1].isExit && goldCount == map.goldRequired()) || node[y][x - 1].isPlayer) {
-            direction = 'W';
+            x--;
         } else if (node[y + 1][x].isPath || node[y + 1][x].isGold || (node[y + 1][x].isExit && goldCount == map.goldRequired()) || node[y + 1][x].isPlayer) {
-            direction = 'S';
+            y++;
         } else if (node[y - 1][x].isPath || node[y - 1][x].isGold || (node[y - 1][x].isExit && goldCount == map.goldRequired()) || node[y - 1][x].isPlayer) {
-            direction = 'N';
-        }
-
-        switch (direction) {
-            case 'N':
-                y--;
-                break;
-            case 'S':
-                y++;
-                break;
-            case 'E':
-                x++;
-                break;
-            case 'W':
-                x--;
-                break;
-            default:
-                break;
-        }
-
-        if (node[y][x].isWall) {
-            direction = findNextMove();
-            objectToSearch = '*';
-            stepsUntilLook = 3;
-            // moved = 0;
-        }
-        if (expectedPos == pos) {
-            stepsUntilLook--;
-            // moved++;
-            // if (moved >= 3) {
-            //     stepsUntilLook = 0;
-            //     moved = 0;
-            // }
+            y--;
         } else {
-            // node[expectedPos[1]][expectedPos[0]].setWall();
+            x++;
+        }
+
+        if (node[y][x].isWall || expectedPos != pos) {
             objectToSearch = '*';
-            // direction = findNextMove();
-            // look = true;
-            // moved = 0;
             stepsUntilLook = 5;
             return "LOOK";
         }
+
+        stepsUntilLook--;
         expectedPos = pos;
         System.out.println("Next move: " + direction);
         return "MOVE " + direction;
@@ -188,45 +156,45 @@ public class BotPlayer extends Player {
      * It is called by the depthFirstSearch function, when a dead end is reached.
      * 
      */
-    private char findNextMove() {
-        int[] pos = position();
-        int x = pos[0];
-        int y = pos[1];
+    // private char findNextMove() {
+    //     int[] pos = position();
+    //     int x = pos[0];
+    //     int y = pos[1];
 
-        System.out.println("Find next move");
+    //     System.out.println("Find next move");
 
-        if (node[y + 1][x].isWall && node[y - 1][x].isWall && node[y][x - 1].isWall) {
-            return 'E';
-        }else if (node[y][x + 1].isWall && node[y - 1][x].isWall && node[y][x - 1].isWall) {
-            return 'S';
-        } else if (node[y][x + 1].isWall && node[y + 1][x].isWall && node[y][x - 1].isWall) {
-            return 'N';
-        } else if (node[y][x + 1].isWall && node[y + 1][x].isWall && node[y - 1][x].isWall) {
-            return 'W';
-        } else if (node[y + 1][x].isWall && node[y - 1][x].isWall) {
-            return 'E';
-        } else if (node[y][x + 1].isWall && node[y - 1][x].isWall) {
-            return 'W';
-        } else if (node[y][x + 1].isWall && node[y + 1][x].isWall) {
-            return 'N';
-        } else if (node[y + 1][x].isWall && node[y][x - 1].isWall) {
-            return 'E';
-        } else if (node[y - 1][x].isWall && node[y][x - 1].isWall) {
-            return 'S';
-        } else if (node[y][x - 1].isWall && node[y + 1][x].isWall) {
-            return 'N';
-        } else if (node[y][x + 1].isWall) {
-            return 'S';
-        } else if (node[y + 1][x].isWall) {
-            return 'E';
-        } else if (node[y - 1][x].isWall) {
-            return 'W';
-        } else if (node[y][x - 1].isWall) {
-            return 'N';
-        }
+    //     if (node[y + 1][x].isWall && node[y - 1][x].isWall && node[y][x - 1].isWall) {
+    //         return 'E';
+    //     }else if (node[y][x + 1].isWall && node[y - 1][x].isWall && node[y][x - 1].isWall) {
+    //         return 'S';
+    //     } else if (node[y][x + 1].isWall && node[y + 1][x].isWall && node[y][x - 1].isWall) {
+    //         return 'N';
+    //     } else if (node[y][x + 1].isWall && node[y + 1][x].isWall && node[y - 1][x].isWall) {
+    //         return 'W';
+    //     } else if (node[y + 1][x].isWall && node[y - 1][x].isWall) {
+    //         return 'E';
+    //     } else if (node[y][x + 1].isWall && node[y - 1][x].isWall) {
+    //         return 'W';
+    //     } else if (node[y][x + 1].isWall && node[y + 1][x].isWall) {
+    //         return 'N';
+    //     } else if (node[y + 1][x].isWall && node[y][x - 1].isWall) {
+    //         return 'E';
+    //     } else if (node[y - 1][x].isWall && node[y][x - 1].isWall) {
+    //         return 'S';
+    //     } else if (node[y][x - 1].isWall && node[y + 1][x].isWall) {
+    //         return 'N';
+    //     } else if (node[y][x + 1].isWall) {
+    //         return 'S';
+    //     } else if (node[y + 1][x].isWall) {
+    //         return 'E';
+    //     } else if (node[y - 1][x].isWall) {
+    //         return 'W';
+    //     } else if (node[y][x - 1].isWall) {
+    //         return 'N';
+    //     }
 
-        return 'N';
-    }
+    //     return 'N';
+    // }
 
     private void startSearch(int x, int y) {
         int[] pos = position();
