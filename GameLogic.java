@@ -5,7 +5,7 @@
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
+import java.util.Arrays;
 import java.io.IOException;
 
 
@@ -94,10 +94,13 @@ public class GameLogic {
 
 		processInput(command, player);
 		processInput(bot.makeMove(), bot);
-		if (player.position() == bot.position()) {
+
+		if (Arrays.equals(player.position(), bot.position())) {
 			System.out.println("You have been caught by the bot!");
+			System.out.println("LOSE");
 			gameRunning = false;
 		}
+
 		System.out.println(map.displayFullMap(player, bot));
 		}
 	}
@@ -130,9 +133,6 @@ public class GameLogic {
 			case "QUIT":
 				System.out.println(quit(user));
 				break;
-			// case "FULLMAP":
-			// 	System.out.println(map.displayFullMap());
-			// 	break;
 			default:
 				System.out.println("Invalid command");
 				break;
@@ -238,12 +238,13 @@ public class GameLogic {
 	 * @return : The map.
 	 */
 	public void look(Player user) {
-		int[] pos = user.position();
+		int[] playerPos = user.position();
+		int[] botPos = bot.position();
 
 		if (user == player) {
-			System.out.print(map.displayMap( pos[0] , pos[1], 'P'));
+			System.out.print(map.displayMap( playerPos, botPos));
 		} else if (user == bot) {
-			bot.look(map.displayMapArray(pos[0], pos[1]));
+			bot.look(map.displayMapArray(playerPos, botPos));
 		}
 	}
 

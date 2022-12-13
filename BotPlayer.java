@@ -4,8 +4,9 @@ import java.util.HashMap;
 public class BotPlayer extends Player {
     
     private char direction = 'E';
-    private int moved = 3;
-    private boolean look;
+    // private int moved = 3;
+    // private boolean look;
+    private int stepsUntilLook = 0;
 
     private int[] expectedPos = position();
     private boolean startSearch = false;
@@ -57,23 +58,33 @@ public class BotPlayer extends Player {
         int x = pos[0];
         int y = pos[1];
         node[y][x].isPath = false;
-        searchForObjects();
         System.out.println("Search object: " + objectToSearch);
         if (node[y][x] == endNode || node[y][x + 1] == endNode || node[y][x - 1] == endNode || node[y + 1][x] == endNode || node[y - 1][x] == endNode) {
             objectToSearch = '*';
         }
+        if (node[y][x].isPlayer) {
+            System.out.println("BOT SHOOT");
+            return "LOOK";
+        } else if (stepsUntilLook == 0) {
 
-        if (look) {
+            searchForObjects();
             System.out.println("BOT LOOK");
-            look = false;
+            if (objectToSearch == 'P') {
+                stepsUntilLook = 100;
+            } else {
+                stepsUntilLook = 5;
+            }
+
             return "LOOK";
         } else if (node[y][x].isGold) {
+
             objectToSearch = '*';
+            searchForObjects();
             System.out.println("BOT PICKUP");
             return "PICKUP";
         } else if (node[y][x].isExit && goldCount >= map.goldRequired()) {
-            objectToSearch = '*';
             System.out.println("BOT QUIT");
+
             return "QUIT";
         }
 
@@ -148,20 +159,23 @@ public class BotPlayer extends Player {
         if (node[y][x].isWall) {
             direction = findNextMove();
             objectToSearch = '*';
-            moved = 0;
+            stepsUntilLook = 3;
+            // moved = 0;
         }
         if (expectedPos == pos) {
-            moved++;
-            if (moved >= 3) {
-                look = true;
-                moved = 0;
-            }
+            stepsUntilLook--;
+            // moved++;
+            // if (moved >= 3) {
+            //     stepsUntilLook = 0;
+            //     moved = 0;
+            // }
         } else {
             // node[expectedPos[1]][expectedPos[0]].setWall();
             objectToSearch = '*';
             // direction = findNextMove();
             // look = true;
-            moved = 0;
+            // moved = 0;
+            stepsUntilLook = 5;
             return "LOOK";
         }
         expectedPos = pos;
@@ -338,6 +352,10 @@ public class BotPlayer extends Player {
     }
 
     private void getCost(Node node) {
+        int weight = 0;
+        if (!(node.isUnknown) && endNode.isUnknown) {
+            weight = 1;
+        }
         // Get the distance between the current node and the start node.
         int xDist = Math.abs(node.getX() - startNode.getX());
         int yDist = Math.abs(node.getY() - startNode.getY());
@@ -349,7 +367,7 @@ public class BotPlayer extends Player {
         node.hCost = xDist + yDist;
 
         // Add the two distances together to get the total cost.
-        node.fCost = node.gCost + node.hCost;
+        node.fCost = node.gCost + node.hCost + weight;
     }
 
     public void look(char[][] view) {
@@ -401,6 +419,8 @@ public class BotPlayer extends Player {
                     System.out.print("G");
                 } else if (node[i][j].isExit) {
                     System.out.print("E");
+                } else if (node[i][j].isPlayer) {
+                    System.out.print("P");
                 } else if (node[i][j].isUnknown) {
                     System.out.print("?");
                 } else {
@@ -415,6 +435,7 @@ public class BotPlayer extends Player {
         System.out.println("Searching for objects");
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
+                node[i][j].isPlayer = false;
                 if (node[i][j].isUnreachable) {
                     continue;
                 }
@@ -430,6 +451,7 @@ public class BotPlayer extends Player {
                     } else if (node[i][j].isPlayer) {
                         if (presedent('P')) {
                             searchObjectPosition = new int[] {j, i};
+                            stepsUntilLook = 100;
                         }
                     } else if (node[i][j].isExit && goldCount >= map.goldRequired()) {
                         if (presedent('E')) {

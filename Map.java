@@ -71,20 +71,25 @@ public class Map {
 
 	/**
 	 * Displays the map around the player.
+	 * Used only for the human player.
 	 *
 	 * @param : The x coordinate of the player.
 	 * @param : The y coordinate of the player.
 	 * @return : The map around the player.
 	 */
-	public String displayMap(int x, int y, char symbol) {
+	public String displayMap(int[] playerPos, int[] botPos) {
 		String mapString = "";
+		int x = playerPos[0];
+		int y = playerPos[1];
 
 		for (int i = y - 2; i < y + 3; i++ ) {
 			for (int j = x - 2; j < x + 3; j++ ) {
 				if (i < 0 || j < 0 || j > map[0].length - 1 || i > map.length - 1) {
 					mapString += "#";
 				} else if (x == j && y == i) {
-					mapString += symbol;
+					mapString += 'P';
+				} else if (botPos[0] == j && botPos[1] == i) {
+					mapString += 'B';
 				} else {
 					mapString += map[i][j];
 				}
@@ -97,18 +102,23 @@ public class Map {
 
 	/**
 	 * Returns a 2D array of the map around the player.
+	 * Used only for Bot.
 	 *
 	 * @param : The x coordinate of the player.
 	 * @param : The y coordinate of the player.
 	 * @return : The map around the player.
 	 */
-	public char[][] displayMapArray(int x, int y) {
+	public char[][] displayMapArray(int[] playerPos, int[] botPos) {
 		char[][] mapArray = new char[5][5];
+		int x = botPos[0];
+		int y = botPos[1];
 
 		for (int i = y - 2; i < y + 3; i++ ) {
 			for (int j = x - 2; j < x + 3; j++ ) {
 				if (i < 0 || j < 0 || j > map[0].length - 1 || i > map.length - 1) {
 					mapArray[i - y + 2][j - x + 2] = '#';
+				} else if (playerPos[0] == j && playerPos[1] == i) {
+					mapArray[i - y + 2][j - x + 2] = 'P';
 				} else {
 					mapArray[i - y + 2][j - x + 2] = map[i][j];
 				}
