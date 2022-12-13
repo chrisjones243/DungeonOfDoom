@@ -60,6 +60,7 @@ public class BotPlayer extends Player {
             objectToSearch = '*';
         }
         if (node[y][x].isPlayer) {
+            node[y][x].isPlayer = false;
             System.out.println("BOT SHOOT");
             return "LOOK";
         } else if (stepsUntilLook <= 0) {
@@ -403,7 +404,6 @@ public class BotPlayer extends Player {
         System.out.println("Searching for objects");
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
-                node[i][j].isPlayer = false;
                 if (node[i][j].isUnreachable) {
                     continue;
                 }
