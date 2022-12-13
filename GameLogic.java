@@ -58,7 +58,7 @@ public class GameLogic {
 	 * @throws IOException
 	 */
 	public void banner() throws IOException {
-		String bannerFile = "banner/banner.txt";
+		String bannerFile = "banner.txt";
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(bannerFile)));
 			String line = reader.readLine();
@@ -106,7 +106,7 @@ public class GameLogic {
 		}
 
 		// Create the map
-		map = new Map("maps/" + mapName);
+		map = new Map(mapName);
 	}
 
 	/**
@@ -137,7 +137,6 @@ public class GameLogic {
 			gameRunning = false;
 		}
 
-		System.out.println(map.displayFullMap(player, bot)); // delete
 		}
 	}
 

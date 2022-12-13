@@ -24,28 +24,6 @@ public class Map {
 		readMap(fileName);
 	}
 
-	public String displayFullMap(Player player, Player bot) { // delete this
-		String mapString = "";
-		int x = player.position()[0];
-		int y = player.position()[1];
-		int xBot = bot.position()[0];
-		int yBot = bot.position()[1];
-		for (int i = 0; i < map.length; i++) {
-			for (int j = 0; j < map[i].length; j++) {
-				if (j == x && i == y) {
-					mapString += "P";
-				} else if (j == xBot && i == yBot) {
-					mapString += "B";
-				} else {
-					mapString += map[i][j];
-				}
-				mapString += " ";
-			}
-			mapString += "\n";
-		}
-		return mapString;
-	}
-
 	/**
      * Reads the map from file.
      *
@@ -145,7 +123,7 @@ public class Map {
 	}
 
 	// Getters
-	
+
 	public String mapName() {
 		return mapName;
 	}
