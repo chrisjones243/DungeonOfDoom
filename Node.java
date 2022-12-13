@@ -18,6 +18,7 @@ public class Node {
     boolean isExit;
     boolean isWall;
     boolean isUnknown = true;
+    boolean isUnreachable = false;
 
 
     public Node(int x, int y) {
@@ -76,5 +77,9 @@ public class Node {
     public void setExit() {
         isExit = true;
         isUnknown = false;
+    }
+
+    public void setUnreachable() {
+        isUnreachable = true;
     }
 }

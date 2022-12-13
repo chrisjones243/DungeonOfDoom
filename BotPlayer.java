@@ -21,6 +21,9 @@ public class BotPlayer extends Player {
     ArrayList<Node> openList = new ArrayList<Node>();
     ArrayList<Node> visitedList = new ArrayList<Node>();
 
+    private int searchIteration = 0;
+
+
     boolean endReached = false;
 
 
@@ -88,6 +91,7 @@ public class BotPlayer extends Player {
             System.out.println("Start search");
             startSearch = false;
             search();
+            
             System.out.println("After search");
             displayNodeMap(); // delete
         }
@@ -143,6 +147,7 @@ public class BotPlayer extends Player {
 
         if (node[y][x].isWall) {
             direction = findNextMove();
+            objectToSearch = '*';
             moved = 0;
         }
         if (expectedPos == pos) {
@@ -260,7 +265,14 @@ public class BotPlayer extends Player {
                 endReached = true;
                 trackThePath();
                 System.out.println("End reached!");
+            } else if (searchIteration >= 300) {
+                endReached = true;
+                endNode.setUnreachable(); // Set the end node to unreachable.
+                objectToSearch = '*';
+                searchForObjects();
+                System.out.println("Search iteration limit reached!");
             } else {
+                searchIteration++;
                 search();
             }
         }
@@ -279,17 +291,22 @@ public class BotPlayer extends Player {
     }
 
     private void resetSearch() {
+        searchIteration = 0;
         endReached = false;
+        for (int i = 0; i < visitedList.size(); i++) {
+            visitedList.get(i).isVisited = false;
+            visitedList.get(i).isPath = false;
+            visitedList.get(i).isOpen = false;
+            visitedList.get(i).parent = null;
+        }
+        for (int i = 0; i < openList.size(); i++) {
+            openList.get(i).isVisited = false;
+            openList.get(i).isPath = false;
+            openList.get(i).isOpen = false;
+            openList.get(i).parent = null;
+        }
         visitedList.clear();
         openList.clear();
-        for (int i = 0; i < map.mapHeight(); i++) {
-            for (int j = 0; j < map.mapWidth(); j++) {
-                node[i][j].isPath = false;
-                node[i][j].isVisited = false;
-                node[i][j].isOpen = false;
-                node[i][j].parent = null;
-            }
-        }
     }
 
     private void openNode(Node node) {
@@ -398,27 +415,33 @@ public class BotPlayer extends Player {
         System.out.println("Searching for objects");
         for (int i = 0; i < map.mapHeight(); i++) {
             for (int j = 0; j < map.mapWidth(); j++) {
+                if (node[i][j].isUnreachable) {
+                    continue;
+                }
                 if (node[i][j] == endNode && node[i][j].isWall) {
                     objectToSearch = '*';
                 }
-                if (node[i][j].isGold) {
-                    System.out.println("Gold found");
-                    if (presedent('G')) {
-                        searchObjectPosition = new int[] {j, i};
-                    }
-                } else if (node[i][j].isPlayer) {
-                    if (presedent('P')) {
-                        searchObjectPosition = new int[] {j, i};
-                    }
-                } else if (node[i][j].isExit && goldCount >= map.goldRequired()) {
-                    if (presedent('E')) {
-                        searchObjectPosition = new int[] {j, i};
-                    }
-                } else if (node[i][j].isUnknown) {
-                    if (presedent('?')) {
-                        searchObjectPosition = new int[] {j, i};
+                if (!(node[i][j].isUnreachable)) {
+                    if (node[i][j].isGold) {
+                        System.out.println("Gold found");
+                        if (presedent('G')) {
+                            searchObjectPosition = new int[] {j, i};
+                        }
+                    } else if (node[i][j].isPlayer) {
+                        if (presedent('P')) {
+                            searchObjectPosition = new int[] {j, i};
+                        }
+                    } else if (node[i][j].isExit && goldCount >= map.goldRequired()) {
+                        if (presedent('E')) {
+                            searchObjectPosition = new int[] {j, i};
+                        }
+                    } else if (node[i][j].isUnknown) {
+                        if (presedent('?')) {
+                            searchObjectPosition = new int[] {j, i};
+                        }
                     }
                 }
+                
             }
         }
     }

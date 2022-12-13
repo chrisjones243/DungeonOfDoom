@@ -180,8 +180,6 @@ public class Map {
 		} finally {
 			br.close();
 		}
-		System.out.println("y: " + map.length);
-		System.out.println("x: " + map[0].length);
 	}
 
 }
