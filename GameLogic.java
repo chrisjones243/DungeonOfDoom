@@ -11,7 +11,6 @@ import java.io.IOException;
 
 public class GameLogic {
 	
-	/* Reference to the map being used */
 	private Map map;
 	private Player player;
 	private BotPlayer bot;
@@ -27,18 +26,26 @@ public class GameLogic {
 		gameRunning = true;
 		banner();
 		chooseMap();
+
 		player = new Player(map);
 		player.updatePosition(initalPosition());
+
 		bot = new BotPlayer(map);
 		bot.updatePosition(initalPosition());
 	}
 
+	/**
+	 * Set's the player's initial position, which is a random position.
+	 * 
+	 * @return int[] - The initial position
+	 */
 	private int[] initalPosition () {
 
 		int x = (int) (Math.random() * map.mapWidth());
 		int y = (int) (Math.random() * map.mapHeight());
 
 		if (map.isWall(x, y) || (player.position()[0] == x && player.position()[1] == y)) {
+			// If the position is a wall or the same as the player's position (for bot), try again
 			return initalPosition();
 		}
 
@@ -47,6 +54,8 @@ public class GameLogic {
 
 	/**
 	 * Prints the banner
+	 * 
+	 * @throws IOException
 	 */
 	public void banner() throws IOException {
 		String bannerFile = "banner/banner.txt";
@@ -86,9 +95,9 @@ public class GameLogic {
 			case "large":
 				mapName = "large_example_map.txt";
 				break;
-			default:
-				map = new Map();
-				return;
+			case "":
+				mapName = "small_example_map.txt";
+				break;
 		}
 		map = new Map("maps/" + mapName);
 	}
@@ -115,7 +124,7 @@ public class GameLogic {
 			gameRunning = false;
 		}
 
-		System.out.println(map.displayFullMap(player, bot));
+		// System.out.println(map.displayFullMap(player, bot));
 		}
 	}
 
@@ -262,18 +271,13 @@ public class GameLogic {
 		}
 	}
 
-	// /**
-	//  * Returns the full map.
-	//  * 
-	//  * @return : The map.
-	//  */
-	// public String lookfull() {
-	// 	return map.displayFullMap();
-	// }
-
 
 	
-	
+	/**
+	 * Main method.
+	 *
+	 * @param args : Command line arguments.
+	 */
 	public static void main(String[] args) throws Exception {
 		GameLogic logic = new GameLogic();
 		logic.play();

@@ -1,4 +1,12 @@
-import java.util.ArrayList;
+/**
+ * BotPlayer.java
+ * 
+ * This class represents the bot player in the game.
+ * It dictates the bot's actions.
+ *
+ */
+
+ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class BotPlayer extends Player {

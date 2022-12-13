@@ -10,38 +10,15 @@ import java.util.ArrayList;
  */
 public class Map {
 
-	/* Representation of the map */
 	private char[][] map;
-	
-	/* Map name */
 	private String mapName;
-	
-	/* Gold required for the human player to win */
 	private int goldRequired;
-	
-	/**
-	 * Default constructor, creates the default map "Very small Labyrinth of doom".
-	 */
-	public Map() {
-		mapName = "Very small Labyrinth of Doom";
-		goldRequired = 2;
-		map = new char[][]{
-		{'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'},
-		{'#','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','#'},
-		{'#','.','.','.','.','.','.','G','.','.','.','.','.','.','.','.','.','E','.','#'},
-		{'#','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','#'},
-		{'#','.','.','E','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','#'},
-		{'#','.','.','.','.','.','.','.','.','.','.','.','G','.','.','.','.','.','.','#'},
-		{'#','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','#'},
-		{'#','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','.','#'},
-		{'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'}
-		};
-	}
 	
 	/**
 	 * Constructor that accepts a map to read in from.
 	 *
-	 * @param : The filename of the map file.
+	 * @param filename The filename of the map file.
+	 * @throws IOException
 	 */
 	public Map(String fileName) throws IOException {
 		readMap(fileName);
@@ -70,32 +47,72 @@ public class Map {
 	}
 
 	/**
-	 * Displays the map around the player.
+     * Reads the map from file.
+     *
+     * @param filename Name of the map's file.
+	 * @throws IOException
+     */
+    public void readMap(String fileName) throws IOException {
+		String line;
+		try {
+			// Read the map file
+			BufferedReader br =  new BufferedReader(new FileReader(fileName));
+
+			ArrayList<char[]> mapList = new ArrayList<char[]>(); // List of char arrays
+
+			mapName = br.readLine().substring(0, 5);
+			// This is the number of gold required to win the game.
+			goldRequired = Integer.parseInt(br.readLine().substring("win ".length(), 5));
+			
+			// Read the map into a list of char arrays
+			while ((line = br.readLine()) != null) {
+				mapList.add(line.toCharArray());
+			}
+			// Convert the list of char arrays into a 2D array
+			map = new char[mapList.size()][];
+			map = mapList.toArray(map);
+
+			br.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found");
+			System.exit(0);
+		} catch (IOException e) {
+			System.out.println("Error reading map file.");
+			System.exit(0);
+		}
+	}
+
+	/**
+	 * Displays the 5x5 map around the player.
 	 * Used only for the human player.
 	 *
-	 * @param : The x coordinate of the player.
-	 * @param : The y coordinate of the player.
-	 * @return : The map around the player.
+	 * @param playerPos The x, y coordinates of the player.
+	 * @param botPos The x, y coordinates of the bot.
+	 * @return : A string of the view.
 	 */
 	public String displayMap(int[] playerPos, int[] botPos) {
 		String mapString = "";
 		int x = playerPos[0];
 		int y = playerPos[1];
 
+		// Display the map around the player
 		for (int i = y - 2; i < y + 3; i++ ) {
 			for (int j = x - 2; j < x + 3; j++ ) {
 				if (i < 0 || j < 0 || j > map[0].length - 1 || i > map.length - 1) {
+					// If the x, y is out of bounds, display a wall
 					mapString += "#";
 				} else if (x == j && y == i) {
+					// If the x, y is the player's position, display a P
 					mapString += 'P';
 				} else if (botPos[0] == j && botPos[1] == i) {
+					// If the x, y is the bot's position, display a B
 					mapString += 'B';
 				} else {
 					mapString += map[i][j];
 				}
-				mapString += " ";
+				mapString += " "; // Add a space between each character for readability
 			}
-			mapString += "\n";
+			mapString += "\n"; // Add a new line after each row
 		}
 		return mapString;
 	}
@@ -104,9 +121,9 @@ public class Map {
 	 * Returns a 2D array of the map around the player.
 	 * Used only for Bot.
 	 *
-	 * @param : The x coordinate of the player.
-	 * @param : The y coordinate of the player.
-	 * @return : The map around the player.
+	 * @param playerPos The x, y coordinates of the player.
+	 * @param botPos The x, y coordinates of the bot.
+	 * @return : A 2D array of the view.
 	 */
 	public char[][] displayMapArray(int[] playerPos, int[] botPos) {
 		char[][] mapArray = new char[5][5];
@@ -127,16 +144,13 @@ public class Map {
 		return mapArray;
 	}
 
+	// Getters
 	public String mapName() {
 		return mapName;
 	}
 
 	public int goldRequired() {
 		return goldRequired;
-	}
-
-	public char getTile(int x, int y) {
-		return map[y][x];
 	}
 
 	public boolean isWall(int x, int y) {
@@ -161,35 +175,6 @@ public class Map {
 
 	public int mapHeight() {
 		return map.length;
-	}
-
-    /**
-     * Reads the map from file.
-     *
-     * @param : Name of the map's file.
-     */
-    public void readMap(String fileName) throws IOException {
-		String line;
-		BufferedReader br =  new BufferedReader(new FileReader(fileName));
-		try {
-			mapName = br.readLine().substring(0, 5);
-			goldRequired = Integer.parseInt(br.readLine().substring("win ".length(), 5));
-			ArrayList<char[]> mapList = new ArrayList<char[]>();
-			// Read the map into a list of char arrays
-			while ((line = br.readLine()) != null) {
-				mapList.add(line.toCharArray());
-			}
-			// Convert the list of char arrays into a 2D array
-			map = new char[mapList.size()][];
-			map = mapList.toArray(map);
-		
-		} catch (FileNotFoundException e) {
-			System.out.println("File not found");
-		} catch (IOException e) {
-			System.out.println("Error reading map file.");
-		} finally {
-			br.close();
-		}
 	}
 
 }
