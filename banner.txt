@@ -8,3 +8,5 @@ ______                                            _____   __  ______
                       |___/                                                                   
 
 Type HELP for command guide.
+
+Maps are Small, Medium and Large.
