@@ -175,6 +175,7 @@ public class GameLogic {
 				break;
 			case "QUIT":
 				System.out.println(quit(user));
+				gameRunning = false;
 				break;
 			default:
 				System.out.println("Invalid command");
